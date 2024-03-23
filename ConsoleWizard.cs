@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace scanapp
 {
+
+    internal class WizardStep
+    {
+
+    }
+
+
     internal class ConsoleWizard
     {
         public ConsoleWizard() { 

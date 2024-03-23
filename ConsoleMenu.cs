@@ -1,4 +1,6 @@
 ﻿
+using MongoDB.Driver.Core.Operations;
+
 namespace ConsoleMenu
 {
     class ConsoleMenuItem<T>
@@ -116,9 +118,9 @@ namespace ConsoleMenu
             while (pressedKey != ConsoleKey.Escape || pressedKey != ConsoleKey.Enter)
             {
                 pressedKey = Console.ReadKey().Key;
-                if (pressedKey == ConsoleKey.UpArrow)
+                if (pressedKey == ConsoleKey.UpArrow || pressedKey == ConsoleKey.K)
                     this.moveCursorUp();
-                if (pressedKey == ConsoleKey.DownArrow)
+                if (pressedKey == ConsoleKey.DownArrow || pressedKey == ConsoleKey.J)
                     this.moveCursorDown();
                 if (pressedKey == ConsoleKey.Escape)
                     break;

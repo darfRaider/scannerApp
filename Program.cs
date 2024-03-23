@@ -4,6 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using scanapp;
 using scanapp.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 const string dbName = "Warehouse";
 const int UNASSIGNED = -1;
@@ -22,6 +23,7 @@ var resp = coll.Find<Article>(_ => true).Project<Article>(proj).ToList();
 string host = "mongodb://192.168.0.5:27017";
 MongoDbHandler mongo = new MongoDbHandler(host, "Warehouse");
 var resp = mongo.getArticles();
+mongo.printArticles();
 
 var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Add new food article", MainMenuAction.ADD_NEW_FOOD),
@@ -31,8 +33,19 @@ var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Add barcode to existing article", MainMenuAction.ADD_BARCODE_TO_EXISTING),
     new ConsoleMenuItem<MainMenuAction>("Containment material check", MainMenuAction.MATERIAL_CHECK_CONTAINMENT)
 };
-var mainMenu = new SelectorMenu<MainMenuAction>(menuActions, 2, "What do you want to do today?\n");
-int selectedIdx = mainMenu.runConsoleMenu();
+
+
+ConsoleTable test = new ConsoleTable(new List<List<string>> { new List<string> { "LoL", "LoLLL" } });
+Console.ReadLine();
+
+var mainMenu = new SelectorMenu<MainMenuAction>(menuActions, 4, "What do you want to do today?\n");
+mainMenu.runConsoleMenu();
+switch (mainMenu.getData())
+{
+    case MainMenuAction.ADD_BARCODE_TO_EXISTING:
+        addBarcodeToArticle(resp);
+        break;
+}
 
 while (true) {
     string? data = Console.ReadLine();
@@ -59,6 +72,56 @@ while (true) {
    // Console.Clear();
 }
 
+int? readInteger()
+{
+    string? articleId = Console.ReadLine();
+    if (articleId == "" || articleId == null)
+    {
+        return null;
+    }
+    int query = UNASSIGNED;
+    try
+    {
+        query = Int32.Parse(articleId);
+    }
+    catch
+    {
+        Console.WriteLine("Unable to parse integer.");
+    }
+    return query;
+}
+
+void addBarcodeToArticle(List<Article> articles)
+{
+    int successCount = 0;
+    while (true)
+    {
+        Console.WriteLine("Barcode to be added to " + successCount.ToString() + " articles.");
+        Console.WriteLine("Enter article id:");
+        int? articleId = readInteger();
+        if (articleId == null)
+            break;
+        if (articleId == UNASSIGNED)
+            continue;
+        var article = articles.Find(a => a.ArticleId == articleId);
+        if (article == null)
+        {
+            Console.Write("Article not found!");
+            continue;
+        }
+        Console.WriteLine(string.Format("Enter Barcode for article '{0}'", article.ArticleName));
+        string? barcode = Console.ReadLine();
+        if (barcode != null)
+        {
+            article.PurchaseNr = barcode;
+            successCount++;
+        }
+        Console.Clear();
+    }
+    if (successCount == 0)
+        return;
+    
+}
 
 
 enum MainMenuAction

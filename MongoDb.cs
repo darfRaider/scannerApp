@@ -27,5 +27,18 @@ namespace scanapp
         {
             return this.articleCollection.Find<Article>(_ => true).ToList();
         }
+
+        private List<string> getStringListFromArticle(Article article)
+        {
+            return new List<string> { article.ArticleId.ToString(), article.ArticleName };
+        }
+
+        public void printArticles()
+        {
+            var header = new List<string> { "Id", "ArticleName" };
+            var articleList = new List<List<string>> { };
+            this.getArticles().ForEach(article => { articleList.Add(getStringListFromArticle(article)); });
+            var ct = new ConsoleTable(articleList, header);
+        }
     }
 }
