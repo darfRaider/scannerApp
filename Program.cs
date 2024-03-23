@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+using scanapp;
 using scanapp.Models;
 
 const string dbName = "Warehouse";
@@ -9,9 +10,6 @@ const int UNASSIGNED = -1;
 
 Console.WriteLine("Loading database records");
 
-var client = new MongoClient("mongodb://192.168.0.5:27017");
-var db = client.GetDatabase(dbName);
-var coll = db.GetCollection<Article>("Articles");
 /*
 var proj = Builders<Article>.Projection
     .Include(x => x.ArticleName)
@@ -20,9 +18,10 @@ var proj = Builders<Article>.Projection
     .Include(x => x.ExpirationDate);
 var resp = coll.Find<Article>(_ => true).Project<Article>(proj).ToList();
 */
-var resp = coll.Find<Article>(_ => true).ToList();
-Console.WriteLine("Loaded " + resp.Count);
-var menulist = new List<string> { "Test", "Test2", "Test3", "Test4" };
+
+string host = "mongodb://192.168.0.5:27017";
+MongoDbHandler mongo = new MongoDbHandler(host, "Warehouse");
+var resp = mongo.getArticles();
 
 var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Add new food article", MainMenuAction.ADD_NEW_FOOD),
@@ -34,12 +33,6 @@ var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
 };
 var mainMenu = new SelectorMenu<MainMenuAction>(menuActions, 2, "What do you want to do today?\n");
 int selectedIdx = mainMenu.runConsoleMenu();
-if(selectedIdx != UNASSIGNED)
-{
-    Console.WriteLine("You have selected menu entry " + menulist[mainMenu.getSelectedIndex()]);
-}
-
-
 
 while (true) {
     string? data = Console.ReadLine();
