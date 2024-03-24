@@ -1,4 +1,5 @@
-﻿using ConsoleMenu;
+﻿using System.Text.Json;
+using ConsoleMenu;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
@@ -7,6 +8,7 @@ using scanapp.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 const string dbName = "Warehouse";
+const string host = "mongodb://192.168.0.13:27017";
 const int UNASSIGNED = -1;
 
 Console.WriteLine("Loading database records");
@@ -20,10 +22,9 @@ var proj = Builders<Article>.Projection
 var resp = coll.Find<Article>(_ => true).Project<Article>(proj).ToList();
 */
 
-string host = "mongodb://192.168.0.5:27017";
-MongoDbHandler mongo = new MongoDbHandler(host, "Warehouse");
+MongoDbHandler mongo = new MongoDbHandler(host, dbName);
 var resp = mongo.getArticles();
-mongo.printArticles();
+// mongo.printArticles();
 
 var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Add new food article", MainMenuAction.ADD_NEW_FOOD),
@@ -38,7 +39,11 @@ var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
 ConsoleTable test = new ConsoleTable(new List<List<string>> { new List<string> { "LoL", "LoLLL" } });
 Console.ReadLine();
 
-var mainMenu = new SelectorMenu<MainMenuAction>(menuActions, 4, "What do you want to do today?\n");
+var mainMenu = new SelectorMenu<MainMenuAction>(
+    menuActions,
+    4,
+    "What do you want to do today?\n"
+    );
 mainMenu.runConsoleMenu();
 switch (mainMenu.getData())
 {
@@ -93,10 +98,11 @@ int? readInteger()
 
 void addBarcodeToArticle(List<Article> articles)
 {
-    int successCount = 0;
+    // int successCount = 0;
+    var modifiedArticles = new List<Article>{};
     while (true)
     {
-        Console.WriteLine("Barcode to be added to " + successCount.ToString() + " articles.");
+        Console.WriteLine("Barcode to be added to " + modifiedArticles.Count + " articles.");
         Console.WriteLine("Enter article id:");
         int? articleId = readInteger();
         if (articleId == null)
@@ -111,15 +117,17 @@ void addBarcodeToArticle(List<Article> articles)
         }
         Console.WriteLine(string.Format("Enter Barcode for article '{0}'", article.ArticleName));
         string? barcode = Console.ReadLine();
-        if (barcode != null)
+        if (barcode != null && barcode != "")
         {
             article.PurchaseNr = barcode;
-            successCount++;
+            modifiedArticles.Add(article);
         }
         Console.Clear();
     }
-    if (successCount == 0)
+    if (modifiedArticles.Count == 0)
         return;
+    string json = JsonSerializer.Serialize(modifiedArticles);
+    File.WriteAllText(@"./test.jsom", json);
     
 }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Driver.Core.Operations;
 
 namespace scanapp
 {
@@ -19,8 +20,25 @@ namespace scanapp
         {
             this._client = new MongoClient(host);
             this._db = this._client.GetDatabase(dbName);
+            if(this.testConnection()){
+                Console.WriteLine("Connection successful.");
+            }
+            else {
+                Console.WriteLine("Connection not successful");
+            }
             this.articleCollection = this._db.GetCollection<Article>("Articles");
             this.containmentCollection = this._db.GetCollection<Article>("Containments");
+        
+        }
+
+        public bool testConnection(){
+            try {
+                this._client.ListDatabases();
+                return true;
+            }
+            catch {
+                return false;
+            }
         }
 
         public List<Article> getArticles()
