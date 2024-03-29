@@ -1,11 +1,5 @@
 ﻿using MongoDB.Driver;
 using scanapp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Driver.Core.Operations;
 
 namespace scanapp
 {
@@ -14,7 +8,7 @@ namespace scanapp
         private MongoClient _client;
         private IMongoDatabase _db;
         private IMongoCollection<Article> articleCollection;
-        private IMongoCollection<Article> containmentCollection;
+        private IMongoCollection<Containment> containmentCollection;
 
         public MongoDbHandler(string host, string dbName)
         {
@@ -27,7 +21,7 @@ namespace scanapp
                 Console.WriteLine("Connection not successful");
             }
             this.articleCollection = this._db.GetCollection<Article>("Articles");
-            this.containmentCollection = this._db.GetCollection<Article>("Containments");
+            this.containmentCollection = this._db.GetCollection<Containment>("Containments");
         
         }
 
@@ -44,6 +38,11 @@ namespace scanapp
         public List<Article> getArticles()
         {
             return this.articleCollection.Find<Article>(_ => true).ToList();
+        }
+
+        public List<Containment> getContainments()
+        {
+            return this.containmentCollection.Find(_ => true).ToList();
         }
 
         private List<string> getStringListFromArticle(Article article)
