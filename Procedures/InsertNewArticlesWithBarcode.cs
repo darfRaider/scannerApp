@@ -4,6 +4,13 @@ namespace scanapp {
 
     internal partial class Procedures {
 
+        private static bool IsDuplicatedArticle(Article a, Article b)
+        {
+            if (a.ArticleName != b.ArticleName) return false;
+            if (a.ImageFileKey != b.ImageFileKey) return false;
+            return true;
+        }
+
         public static void InsertNewArticlesWithBarcode(List<Article> articles)
         {
             while (true)
@@ -13,7 +20,7 @@ namespace scanapp {
                 if (barcode == null || barcode == "")
                     return;
                 var alreadyExisting = articles.FindAll(article => article.PurchaseNr == barcode);
-                if (alreadyExisting == null)
+                if (alreadyExisting == null || alreadyExisting.Count == 0)
                 {
                     // Call insert routine
 
@@ -39,6 +46,8 @@ namespace scanapp {
                             break;
                         case Constants.AddNewArticleAction.DUPLICATE_ARTICLE:
                             // Call duplication routine
+                            Console.Write("Expiration Date: ");
+                            String? expDate = Console.ReadLine();
                             break;
                     }
                 }
@@ -47,6 +56,7 @@ namespace scanapp {
                     Console.WriteLine("There exists multiple articles with same barcode. Handling has to be implemented...");
                     Console.Read();
                     // There exists multiple
+                    // TODO: use IsDuplicatedArticle in order to find out if existing article actually are the same drop_duplicates subset imageFIleKey and articleName
                 }
             }
         }
