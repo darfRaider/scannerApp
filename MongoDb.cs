@@ -58,5 +58,40 @@ namespace scanapp
             this.getArticles().ForEach(article => { articleList.Add(getStringListFromArticle(article)); });
             var ct = new ConsoleTable(articleList, header);
         }
+
+        public bool setBarcodeOfArticles(List<Article> articles)
+        {
+            bool success = true;
+            try
+            {
+                articles.ForEach(article =>
+                {
+                    var res = this.setBarcodeOfArticle(article);
+                    if (!res)
+                        success = false;
+                });
+            }
+            catch
+            {
+                return false;
+            }
+            return success;
+        }
+
+        public bool setBarcodeOfArticle(Article article)
+        {
+            var filter = Builders<Article>.Filter.Eq(a => a.ArticleId, article.ArticleId);
+            var update = Builders<Article>.Update.Set(a => a.PurchaseNr, article.PurchaseNr);
+            try
+            {
+                var res = this.articleCollection.UpdateOne(filter, update);
+                return res.IsAcknowledged;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
+
 }

@@ -47,6 +47,7 @@ namespace ConsoleMenu
         private const int UNASSIGEND = -1;
         private string? menuTitle;
         private int selectedIdx = 0;
+        private string? textBeforeMenu;
         private List<ConsoleMenuItem<T>> menuEntries;
         private static readonly ConsoleColor defaultColor = ConsoleColor.Gray;
 
@@ -55,11 +56,21 @@ namespace ConsoleMenu
             return defaultColor;
         }
 
-        public SelectorMenu(List<ConsoleMenuItem<T>> menuEntries, int defaultIdx = 0, string? menuTitle = null)
+        public static SelectorMenu<bool> getYesNoMenu(string title)
+        {
+            var lst = new List<ConsoleMenuItem<bool>> {
+                new ConsoleMenuItem<bool>("Yes", true),
+                new ConsoleMenuItem<bool>("No", false)
+            };
+            return new SelectorMenu<bool>(lst, 1, title);
+        }
+
+        public SelectorMenu(List<ConsoleMenuItem<T>> menuEntries, int defaultIdx = 0, string? menuTitle = null, string? textBeforeMenu = null)
         {
             if (menuEntries.Count == 0)
                 throw new Exception("List must contain at least one record");
             this.menuTitle = menuTitle;
+            this.textBeforeMenu = textBeforeMenu;
             Console.ForegroundColor = SelectorMenu<T>.defaultColor;
             this.menuEntries = menuEntries;
             this.menuEntries.ForEach(entry => { entry.isSelected = false; });
@@ -88,6 +99,8 @@ namespace ConsoleMenu
         public void printMenu()
         {
             Console.Clear();
+            if (this.textBeforeMenu != null)
+                Console.WriteLine(this.textBeforeMenu);
             if (this.menuTitle != null)
                 Console.WriteLine(this.menuTitle);
             this.menuEntries.ForEach(entry => entry.writeConsole());
@@ -110,7 +123,7 @@ namespace ConsoleMenu
             this.setSelectedEntry(newIndex);
         }
 
-        public int runConsoleMenu()
+        public T? runConsoleMenu()
         {
             this.printMenu();
             ConsoleKey? pressedKey = null;
@@ -132,7 +145,7 @@ namespace ConsoleMenu
                 this.printMenu();
             }
             Console.Clear();
-            return selectedValue;
+            return this.getData();
         }
     };
 }

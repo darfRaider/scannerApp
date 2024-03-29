@@ -1,32 +1,31 @@
 ﻿using System.Text.Json;
 using ConsoleMenu;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
 using scanapp;
 using scanapp.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 const string dbName = "Warehouse";
-const string host = "mongodb://192.168.0.13:27017";
 const int UNASSIGNED = -1;
 
+var mongoHostList = new List<ConsoleMenuItem<String>>
+{
+    new ConsoleMenuItem<String>("localhost", "mongodb://localhost:27017"),
+    new ConsoleMenuItem<String>("Raspberrypi 5", "mongodb://192.168.0.13:27017"),
+    new ConsoleMenuItem<String>("Production NAS", "mongodb://192.168.0.5:27017")
+};
+
+string? host = new SelectorMenu<String>(mongoHostList, 1, "Select Development Environment").runConsoleMenu();
+
+if(host == null)
+{
+    return 0;
+}
+
 Console.WriteLine("Loading database records");
-
-/*
-var proj = Builders<Article>.Projection
-    .Include(x => x.ArticleName)
-    .Include(x=> x.ArticleId)
-    .Include(x => x.PurchaseNr)
-    .Include(x => x.ExpirationDate);
-var resp = coll.Find<Article>(_ => true).Project<Article>(proj).ToList();
-*/
-
 MongoDbHandler mongo = new MongoDbHandler(host, dbName);
 var resp = mongo.getArticles();
-// mongo.printArticles();
 
 var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
+    new ConsoleMenuItem<MainMenuAction>("Add new article with barcode", MainMenuAction.ADD_NEW_ARTICLE_WITH_BARCODE),
     new ConsoleMenuItem<MainMenuAction>("Add new food article", MainMenuAction.ADD_NEW_FOOD),
     new ConsoleMenuItem<MainMenuAction>("Add new food article with barcode", MainMenuAction.ADD_NEW_NON_FOOD_WITH_BARCODE),
     new ConsoleMenuItem<MainMenuAction>("Add new non-food article", MainMenuAction.ADD_NEW_NON_FOOD),
@@ -35,24 +34,25 @@ var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Containment material check", MainMenuAction.MATERIAL_CHECK_CONTAINMENT)
 };
 
-
-ConsoleTable test = new ConsoleTable(new List<List<string>> { new List<string> { "LoL", "LoLLL" } });
-Console.ReadLine();
-
 var mainMenu = new SelectorMenu<MainMenuAction>(
     menuActions,
-    4,
+    0,
     "What do you want to do today?\n"
     );
-mainMenu.runConsoleMenu();
-switch (mainMenu.getData())
-{
-    case MainMenuAction.ADD_BARCODE_TO_EXISTING:
-        addBarcodeToArticle(resp);
-        break;
-}
+
 
 while (true) {
+    mainMenu.runConsoleMenu();
+    switch (mainMenu.getData())
+    {
+        case MainMenuAction.ADD_BARCODE_TO_EXISTING:
+            addBarcodeToArticle(resp, mongo);
+            break;
+        case MainMenuAction.ADD_NEW_ARTICLE_WITH_BARCODE:
+            insertNewArticlesWithBarcode(resp);
+            break;
+    }
+    /*
     string? data = Console.ReadLine();
     if(data == null){
         Console.WriteLine("String should not be null!");
@@ -74,7 +74,7 @@ while (true) {
     Console.WriteLine("Article Name: " + searchResult.ArticleName);
     Console.WriteLine(DateTime.Now.ToString());
     Console.WriteLine("Expiration date: " + searchResult.ExpirationDate.ToString());
-   // Console.Clear();
+    */
 }
 
 int? readInteger()
@@ -96,9 +96,56 @@ int? readInteger()
     return query;
 }
 
-void addBarcodeToArticle(List<Article> articles)
+
+void insertNewArticlesWithBarcode(List<Article> articles)
 {
-    // int successCount = 0;
+    while (true)
+    {
+        Console.Write("Enter the barcode: ");
+        string? barcode = Console.ReadLine();
+        if (barcode == null || barcode == "")
+            return;
+        var alreadyExisting = articles.FindAll(article => article.PurchaseNr == barcode);
+        if (alreadyExisting == null)
+        {
+            // Call insert routine
+
+            // Add a new article
+            // Enter Article Name
+            // Enter Image URL
+            // Enter expiration date
+        }
+        else if (alreadyExisting.Count == 1)
+        {
+            string menuString =
+                string.Format("Purchase number '{0}' already registered with article #{1} '{2}'",
+                barcode, alreadyExisting[0].ArticleId, alreadyExisting[0].ArticleName);
+            var decision = new SelectorMenu<AddNewArticleAction>(new List<ConsoleMenuItem<AddNewArticleAction>>
+            {
+                new ConsoleMenuItem<AddNewArticleAction>("Duplicate the article", AddNewArticleAction.DUPLICATE_ARTICLE),
+                new ConsoleMenuItem<AddNewArticleAction>("Define new article", AddNewArticleAction.INSERT_NEW_ARTICLE),
+            }, 0, menuString).runConsoleMenu();
+            switch (decision)
+            {
+                case AddNewArticleAction.INSERT_NEW_ARTICLE:
+                    // Call insert routine
+                    break;
+                case AddNewArticleAction.DUPLICATE_ARTICLE:
+                    // Call duplication routine
+                    break;
+            }
+        }
+        else
+        {
+            Console.WriteLine("There exists multiple articles with same barcode. Handling has to be implemented...");
+            Console.Read();
+            // There exists multiple
+        }
+    }
+}
+
+void addBarcodeToArticle(List<Article> articles, MongoDbHandler mongoHandler)
+{
     var modifiedArticles = new List<Article>{};
     while (true)
     {
@@ -126,14 +173,37 @@ void addBarcodeToArticle(List<Article> articles)
     }
     if (modifiedArticles.Count == 0)
         return;
-    string json = JsonSerializer.Serialize(modifiedArticles);
-    File.WriteAllText(@"./test.jsom", json);
-    
+    if (!SelectorMenu<bool>.getYesNoMenu("Do you want to update articles?").runConsoleMenu())
+        return;
+    var success = mongoHandler.setBarcodeOfArticles(modifiedArticles);
+    if (success)
+    {
+        Console.WriteLine("Barcode of articles successfully updated");
+    }
+    else
+    {
+        Console.WriteLine("There was an error updating the barcodes");
+    }
+    Console.WriteLine("Press any key to continue...");
+    Console.Read();
 }
 
+enum DeveolpmentEnvironment
+{
+    PRODUCTION_NAS,
+    RASPBERRY_PI_5,
+    LOCALHOST,
+}
+
+enum AddNewArticleAction
+{
+    DUPLICATE_ARTICLE,
+    INSERT_NEW_ARTICLE
+};
 
 enum MainMenuAction
 {
+    ADD_NEW_ARTICLE_WITH_BARCODE,
     ADD_NEW_FOOD,
     ADD_NEW_FOOD_WITH_BARCODE,
     ADD_NEW_NON_FOOD,
