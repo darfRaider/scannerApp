@@ -29,12 +29,13 @@ var menuActions = new List<ConsoleMenuItem<MainMenuAction>> {
     new ConsoleMenuItem<MainMenuAction>("Add new non-food article with barcode", MainMenuAction.ADD_NEW_NON_FOOD_WITH_BARCODE),
     new ConsoleMenuItem<MainMenuAction>("Add barcode to existing article", MainMenuAction.ADD_BARCODE_TO_EXISTING),
     new ConsoleMenuItem<MainMenuAction>("Containment material check", MainMenuAction.MATERIAL_CHECK_CONTAINMENT),
+    new ConsoleMenuItem<MainMenuAction>("Assign articles to containment", MainMenuAction.ASSIGN_CONTAINMENT_TO_ARTICLE),
     new ConsoleMenuItem<MainMenuAction>("Quit", MainMenuAction.QUIT)
 };
 
 var mainMenu = new SelectorMenu<MainMenuAction>(
     menuActions,
-    0,
+    7,
     "What do you want to do today?\n"
     );
 

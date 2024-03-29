@@ -29,10 +29,10 @@ namespace scanapp
 
             this.data = data;
             this.headers = headers;
-            printData();
+            PrintData();
         }
 
-        private void printData()
+        private void PrintData()
         {
             int[] rowSizes = this.getRowSizes();
             printSeparatingLine(rowSizes);
