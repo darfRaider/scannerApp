@@ -3,10 +3,9 @@ using scanapp;
 
 namespace scanapp {
 
-    public partial class Procedures {
-        public static void AddBarcodeToArticle(List<Article> articles)
+    internal partial class Procedures {
+        public static void AddBarcodeToArticle(List<Article> articles, MongoDbHandler mongoHandler)
         {
-            // int successCount = 0;
             var modifiedArticles = new List<Article>{};
             while (true)
             {
@@ -34,10 +33,21 @@ namespace scanapp {
             }
             if (modifiedArticles.Count == 0)
                 return;
-            // string json = JsonSerializer.Serialize(modifiedArticles);
-            // File.WriteAllText(@"./test.jsom", json);
-            
+            if (!SelectorMenu<bool>.getYesNoMenu("Do you want to update articles?").runConsoleMenu())
+                return;
+            var success = mongoHandler.setBarcodeOfArticles(modifiedArticles);
+            if (success)
+            {
+                Console.WriteLine("Barcode of articles successfully updated");
+            }
+            else
+            {
+                Console.WriteLine("There was an error updating the barcodes");
+            }
+            Console.WriteLine("Press any key to continue...");
+            Console.Read();
         }
+
     };
 
 }

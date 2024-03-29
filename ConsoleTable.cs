@@ -11,6 +11,8 @@ namespace scanapp
     {
         private List<List<string>> data;
         private List<string>? headers;
+
+
         public ConsoleTable(List<List<string>> data, List<string>? headers = null)
         {
             int nRows =  data.Count;
