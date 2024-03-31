@@ -22,7 +22,7 @@ namespace scanapp.Models
         public int? Quantity { get; set; }
 
         [BsonElement("ArticleName")]
-        public string? ArticleName { get; set; }
+        public string ArticleName { get; set; } = "";
 
         public string? Description { get; set; }
 

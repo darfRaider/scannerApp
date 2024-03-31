@@ -1,7 +1,6 @@
 ﻿using scanapp;
 using scanapp.Models;
 
-
 var mongoHostList = new List<ConsoleMenuItem<String>>
 {
     new ConsoleMenuItem<String>("localhost", "mongodb://localhost:27017"),
