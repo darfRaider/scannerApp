@@ -7,12 +7,22 @@ var mongoHostList = new List<ConsoleMenuItem<String>>
     new ConsoleMenuItem<String>("Raspberrypi 5", "mongodb://192.168.0.13:27017"),
     new ConsoleMenuItem<String>("Production NAS", "mongodb://192.168.0.5:27017")
 };
+
+const String backendUri = "http://192.168.0.13:5269/";
+
 string? host = new SelectorMenu<String>(mongoHostList, 1, "Select Development Environment").runConsoleMenu();
 
 if(host == null)
 {
     return 0;
 }
+
+// var s  = new Service(backendUri);
+// Article a = new Article();
+// a.ArticleName = "Testli";
+// s.DuplicateArticle(1762, a);
+// Console.ReadLine();
+
 
 Console.WriteLine("Loading database records");
 MongoDbHandler mongo = new MongoDbHandler(host, Constants.DatabaseName);
