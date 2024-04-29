@@ -55,5 +55,9 @@ namespace scanapp.Models
         public double? Weight { get; set; }
 
         public double? WeightNet { get; set; }
+
+        public double? Barcode { get; set; }
+
+        public double? State { get; set; }
     }
 }

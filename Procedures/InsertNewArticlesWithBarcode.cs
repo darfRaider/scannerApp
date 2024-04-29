@@ -1,4 +1,6 @@
 using scanapp.Models;
+using scanapp;
+
 
 namespace scanapp {
 
@@ -13,6 +15,7 @@ namespace scanapp {
 
         public static void InsertNewArticlesWithBarcode(List<Article> articles)
         {
+            bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?").runConsoleMenu();
             while (true)
             {
                 Console.Write("Enter the barcode: ");
@@ -22,6 +25,7 @@ namespace scanapp {
                 var alreadyExisting = articles.FindAll(article => article.PurchaseNr == barcode);
                 if (alreadyExisting == null || alreadyExisting.Count == 0)
                 {
+                    
                     // Call insert routine
 
                     // Add a new article
@@ -48,6 +52,7 @@ namespace scanapp {
                             // Call duplication routine
                             Console.Write("Expiration Date: ");
                             String? expDate = Console.ReadLine();
+                            DateTime test = Utils.ParseDate(expDate);
                             break;
                     }
                 }

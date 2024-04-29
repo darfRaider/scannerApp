@@ -40,5 +40,17 @@ namespace scanapp {
             }
             return query;
         }
+
+        public static DateTime ParseDate(string input)
+        {
+            try
+            {
+                return DateTime.Parse(input);
+            }
+            catch
+            {
+                throw new Exception(String.Format("Datetimeparsing failed with input {0}", input));
+            }
+        }
     }
 }
