@@ -13,8 +13,12 @@ namespace scanapp {
             return true;
         }
 
+
         public static void InsertNewArticlesWithBarcode(List<Article> articles)
         {
+            // TODO: move  following to config file!!
+            const String backendUri = "http://192.168.0.13:5269/";
+
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
             List<Article> articlesToBeDuplicated = new List<Article>();
@@ -25,35 +29,48 @@ namespace scanapp {
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
                     break;
-                var alreadyExisting = articles.FindAll(article => article.Barcode == barcode);
-                if (alreadyExisting == null || alreadyExisting.Count == 0)
+                DateTime? expirationDate = Utils.ReadDate("Enter Expiration Date: ");
+                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode);
+                if (alreadyExistingLst == null || alreadyExistingLst.Count == 0)
                 {
-                    
+                    Article newArticle = new Article();
+                    newArticle.Barcode = barcode;
+                    newArticle.IsFlagged = setNewArticlesFlagged;
+                    newArticle.ExpirationDate = expirationDate;
+                    newArticle.ArticleName = Utils.ReadString("Article Name: ");
+                    articlesToBeInserted.Add(newArticle);
                     // Call insert routine
-
                     // Add a new article
-                    // Enter Article Name
                     // Enter Image URL
-                    // Enter expiration date
                 }
-                else if (alreadyExisting.Count == 1)
+                else if (alreadyExistingLst.Count == 1)
                 {
+                    Article existing = alreadyExistingLst[0];
+                    existing.ExpirationDate = expirationDate;
                     string menuString =
-                        string.Format("Purchase number '{0}' already registered with article #{1} '{2}'",
-                        barcode, alreadyExisting[0].ArticleId, alreadyExisting[0].ArticleName);
+                        string.Format(
+                            "Purchase number '{0}' already registered with article #{1} '{2}'",
+                            barcode,
+                            existing.ArticleId,
+                            existing.ArticleName);
                     var decision = new SelectorMenu<Constants.AddNewArticleAction>(new List<ConsoleMenuItem<Constants.AddNewArticleAction>>
                     {
-                        new ConsoleMenuItem<Constants.AddNewArticleAction>("Duplicate the article", Constants.AddNewArticleAction.DUPLICATE_ARTICLE),
-                        new ConsoleMenuItem<Constants.AddNewArticleAction>("Define new article", Constants.AddNewArticleAction.INSERT_NEW_ARTICLE),
+                        new ConsoleMenuItem<Constants.AddNewArticleAction>(
+                            "Duplicate the article",
+                            Constants.AddNewArticleAction.DUPLICATE_ARTICLE),
+                        new ConsoleMenuItem<Constants.AddNewArticleAction>(
+                            "Define new article",
+                            Constants.AddNewArticleAction.INSERT_NEW_ARTICLE),
                     }, 0, menuString).runConsoleMenu();
                     switch (decision)
                     {
                         case Constants.AddNewArticleAction.INSERT_NEW_ARTICLE:
+                            Console.WriteLine("INSERT NEW ARTICLE ROUTINE");
                             // Call insert routine
                             break;
                         case Constants.AddNewArticleAction.DUPLICATE_ARTICLE:
                             // Call duplication routine
-                            DateTime? dt = Utils.ReadDate("Enter Expiration Date: ");
+                            articlesToBeDuplicated.Add(existing);
                             break;
                     }
                 }
@@ -64,9 +81,14 @@ namespace scanapp {
                     // There exists multiple
                     // TODO: use IsDuplicatedArticle in order to find out if existing article actually are the same drop_duplicates subset imageFIleKey and articleName
                 }
-            }
-            Console.WriteLine("HERE DO THE INSERION OR DUPLICATION");
-            Console.ReadLine();
+            }            
+            bool performImport = SelectorMenu<bool>.getYesNoMenu("Do you want to import the articles?", false).runConsoleMenu();
+            if(!performImport)
+                return;
+            
+            Service apiService  = new Service(backendUri);
+            articlesToBeInserted.ForEach(article => apiService.InsertArticle(article));
+            articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
         }
     };
 }

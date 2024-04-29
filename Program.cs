@@ -17,7 +17,6 @@ if(host == null)
     return 0;
 }
 
-// var s  = new Service(backendUri);
 // Article a = new Article();
 // a.ArticleName = "Testli";
 // s.DuplicateArticle(1762, a);

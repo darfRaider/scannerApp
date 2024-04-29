@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using MongoDB.Bson.IO;
 using scanapp.Models;
 using System.Text;
+using scanapp;
 
 namespace scanapp {
 
@@ -22,6 +23,7 @@ namespace scanapp {
 
         public async void DuplicateArticle(int articleId, Article? newArticleInfo){
             StringContent strContent;
+            newArticleInfo.ArticleId = Constants.UNASSIGNED;
             if(newArticleInfo != null) 
                 strContent = new StringContent(JsonSerializer.Serialize(newArticleInfo), Encoding.UTF8, "application/json");
             else
@@ -37,7 +39,25 @@ namespace scanapp {
                 Console.WriteLine(resp.StatusCode);
                 Console.WriteLine(resp.Content);
                 Console.WriteLine("Request Error");
+            }
+        }
 
+        public async void InsertArticle(Article? newArticleInfo){
+            StringContent strContent = new StringContent(
+                JsonSerializer.Serialize(newArticleInfo),
+                Encoding.UTF8,
+                "application/json");
+
+            var resp = await this.sharedClient.PostAsync("api/articles", strContent);
+            if(resp.StatusCode == System.Net.HttpStatusCode.Created){
+                Console.Write("StringContent: ");
+                Console.WriteLine(strContent);
+                Console.WriteLine("Request OK");
+            }
+            else {
+                Console.WriteLine(resp.StatusCode);
+                Console.WriteLine(resp.Content);
+                Console.WriteLine("Request Error");
             }
         }
     }

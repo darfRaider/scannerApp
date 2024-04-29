@@ -4,6 +4,7 @@ using scanapp;
 namespace scanapp {
 
     internal partial class Procedures {
+        
         public static void AddBarcodeToArticle(List<Article> articles, MongoDbHandler mongoHandler)
         {
             var modifiedArticles = new List<Article>{};
