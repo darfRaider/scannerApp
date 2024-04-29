@@ -15,14 +15,17 @@ namespace scanapp {
 
         public static void InsertNewArticlesWithBarcode(List<Article> articles)
         {
-            bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?").runConsoleMenu();
+            bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
+            bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
+            List<Article> articlesToBeDuplicated = new List<Article>();
+            List<Article> articlesToBeInserted = new List<Article>();
             while (true)
             {
                 Console.Write("Enter the barcode: ");
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
-                    return;
-                var alreadyExisting = articles.FindAll(article => article.PurchaseNr == barcode);
+                    break;
+                var alreadyExisting = articles.FindAll(article => article.Barcode == barcode);
                 if (alreadyExisting == null || alreadyExisting.Count == 0)
                 {
                     
@@ -50,9 +53,7 @@ namespace scanapp {
                             break;
                         case Constants.AddNewArticleAction.DUPLICATE_ARTICLE:
                             // Call duplication routine
-                            Console.Write("Expiration Date: ");
-                            String? expDate = Console.ReadLine();
-                            DateTime test = Utils.ParseDate(expDate);
+                            DateTime? dt = Utils.ReadDate("Enter Expiration Date: ");
                             break;
                     }
                 }
@@ -64,6 +65,8 @@ namespace scanapp {
                     // TODO: use IsDuplicatedArticle in order to find out if existing article actually are the same drop_duplicates subset imageFIleKey and articleName
                 }
             }
+            Console.WriteLine("HERE DO THE INSERION OR DUPLICATION");
+            Console.ReadLine();
         }
     };
 }

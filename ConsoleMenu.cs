@@ -1,5 +1,4 @@
 ﻿
-
 namespace scanapp
 {
     internal class ConsoleMenuItem<T>
@@ -55,13 +54,14 @@ namespace scanapp
             return defaultColor;
         }
 
-        public static SelectorMenu<bool> getYesNoMenu(string title)
+        public static SelectorMenu<bool> getYesNoMenu(string title, bool defaultBool = false)
         {
+            int defaultidx = defaultBool ? 0 : 1;
             var lst = new List<ConsoleMenuItem<bool>> {
                 new ConsoleMenuItem<bool>("Yes", true),
                 new ConsoleMenuItem<bool>("No", false)
             };
-            return new SelectorMenu<bool>(lst, 1, title);
+            return new SelectorMenu<bool>(lst,  defaultidx, title);
         }
 
         public SelectorMenu(List<ConsoleMenuItem<T>> menuEntries, int defaultIdx = 0, string? menuTitle = null, string? textBeforeMenu = null)
