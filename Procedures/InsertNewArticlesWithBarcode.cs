@@ -14,17 +14,16 @@ namespace scanapp {
         }
 
 
-        public static void InsertNewArticlesWithBarcode(List<Article> articles)
+        public static void InsertNewArticlesWithBarcode(List<Article> articles, string backendUri)
         {
-            // TODO: move  following to config file!!
-            const String backendUri = "http://192.168.0.13:5269/";
-
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
             List<Article> articlesToBeDuplicated = new List<Article>();
             List<Article> articlesToBeInserted = new List<Article>();
             while (true)
             {
+                Console.Clear();
+                Console.WriteLine(String.Format("Staged Articles: {0} (new) {1} (duplicated)", articlesToBeInserted.Count, articlesToBeDuplicated.Count));
                 Console.Write("Enter the barcode: ");
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
