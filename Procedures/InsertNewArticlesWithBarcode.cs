@@ -45,6 +45,8 @@ namespace scanapp {
                 else if (alreadyExistingLst.Count == 1)
                 {
                     Article existing = alreadyExistingLst[0];
+                    existing.Comment = null;
+                    existing.PurchaseDate = null;
                     existing.ExpirationDate = expirationDate;
                     string menuString =
                         string.Format(

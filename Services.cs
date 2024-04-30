@@ -23,7 +23,7 @@ namespace scanapp {
 
         public async void DuplicateArticle(int articleId, Article? newArticleInfo){
             StringContent strContent;
-            newArticleInfo.ArticleId = Constants.UNASSIGNED;
+            // newArticleInfo.ArticleId = Constants.UNASSIGNED;
             if(newArticleInfo != null) 
                 strContent = new StringContent(JsonSerializer.Serialize(newArticleInfo), Encoding.UTF8, "application/json");
             else
