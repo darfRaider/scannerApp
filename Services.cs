@@ -21,7 +21,7 @@ namespace scanapp {
             };
         }
 
-        public async void DuplicateArticle(int articleId, Article? newArticleInfo){
+        public async Task DuplicateArticle(int articleId, Article? newArticleInfo){
             StringContent strContent;
             // newArticleInfo.ArticleId = Constants.UNASSIGNED;
             if(newArticleInfo != null) 
@@ -42,7 +42,7 @@ namespace scanapp {
             }
         }
 
-        public async void InsertArticle(Article? newArticleInfo){
+        public async Task InsertArticle(Article? newArticleInfo){
             StringContent strContent = new StringContent(
                 JsonSerializer.Serialize(newArticleInfo),
                 Encoding.UTF8,

@@ -14,7 +14,7 @@ namespace scanapp {
         }
 
 
-        public static void InsertNewArticlesWithBarcode(List<Article> articles, string backendUri)
+        public static async void InsertNewArticlesWithBarcode(List<Article> articles, string backendUri)
         {
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
@@ -28,8 +28,10 @@ namespace scanapp {
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
                     break;
-                DateTime? expirationDate = Utils.ReadDate("Enter Expiration Date: ");
-                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode);
+                DateTime? expirationDate = null;
+                if (addExpirationDate)
+                    expirationDate = Utils.ReadDate("Enter Expiration Date: ");
+                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode).Distinct(new ArticleComparer()).ToList();
                 if (alreadyExistingLst == null || alreadyExistingLst.Count == 0)
                 {
                     Article newArticle = new Article();
@@ -88,8 +90,12 @@ namespace scanapp {
                 return;
             
             Service apiService  = new Service(backendUri);
-            articlesToBeInserted.ForEach(article => apiService.InsertArticle(article));
-            articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
+            foreach(var article in articlesToBeInserted)
+                await apiService.InsertArticle(article);
+            foreach(var article in articlesToBeDuplicated)
+                await apiService.DuplicateArticle(article.ArticleId, article);
+            // articlesToBeInserted.ForEach(article => );
+            // articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
         }
     };
 }
