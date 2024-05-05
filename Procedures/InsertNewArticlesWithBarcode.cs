@@ -17,10 +17,10 @@ namespace scanapp {
         public static void InsertNewArticlesWithBarcode(List<Article> articles)
         {
             // TODO: move  following to config file!!
-            const String backendUri = "http://192.168.0.13:5269/";
-
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
+            bool addImageUrls = SelectorMenu<bool>.getYesNoMenu("Do you want to add article image urls?", true).runConsoleMenu();
+
             List<Article> articlesToBeDuplicated = new List<Article>();
             List<Article> articlesToBeInserted = new List<Article>();
             while (true)
