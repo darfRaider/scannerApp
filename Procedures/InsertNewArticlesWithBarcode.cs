@@ -48,8 +48,11 @@ namespace scanapp {
                 {
                     Article existing = alreadyExistingLst[0];
                     existing.Comment = null;
+                    existing.State = null;
                     existing.PurchaseDate = null;
                     existing.ExpirationDate = expirationDate;
+                    if(setNewArticlesFlagged)
+                        existing.IsFlagged = true;
                     string menuString =
                         string.Format(
                             "Purchase number '{0}' already registered with article #{1} '{2}'",
