@@ -50,6 +50,7 @@ namespace scanapp {
                     existing.Comment = null;
                     existing.State = null;
                     existing.PurchaseDate = null;
+                    existing.Location = null;
                     existing.ExpirationDate = expirationDate;
                     if(setNewArticlesFlagged)
                         existing.IsFlagged = true;
