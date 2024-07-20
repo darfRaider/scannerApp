@@ -4,10 +4,12 @@ using MongoDB.Bson.IO;
 using scanapp.Models;
 using System.Text;
 using scanapp;
+using System.Security.Cryptography.X509Certificates;
+using Amazon.Runtime.Internal;
 
 namespace scanapp {
 
-    class Service {
+    public class Service {
         private HttpClient sharedClient;
         
         public Service(String uri) {
@@ -19,6 +21,14 @@ namespace scanapp {
             {
                 BaseAddress = new Uri(uri),
             };
+        }
+
+        public async Task SetArticleContainments(int containmentId, HashSet<Article> articles){
+            var data = new RequestArticlesContainmentAssignment();
+            data.ContainmentId = containmentId;
+            data.Articles = articles.Select(x=>x.ArticleId).ToArray();
+            var resp = await this.sharedClient.PostAsync(
+                String.Format("api/articles/assignContainmentToArticles"), new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json"));
         }
 
         public async Task DuplicateArticle(int articleId, Article? newArticleInfo){

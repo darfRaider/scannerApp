@@ -8,7 +8,7 @@ namespace scanapp {
 
     internal partial class Procedures {
         
-        private static int? ParseContainmentIdFromString(string data)
+        private static int ParseContainmentIdFromString(string data)
         {
             try
             {
@@ -16,7 +16,7 @@ namespace scanapp {
             }
             catch
             {
-                return null;
+                return Constants.UNASSIGNED;
             }
         }
 
@@ -30,7 +30,7 @@ namespace scanapp {
             return lst;
         }
 
-        public static void AssignArticlesToContainment(List<Article> articles, List<Containment> containments){
+        public static async void AssignArticlesToContainment(List<Article> articles, List<Containment> containments, string backendUri){
             string? containment = "";
             while (true)
             {
@@ -45,8 +45,8 @@ namespace scanapp {
                     Console.ReadLine();
                     continue;
                 }
-                int? parsedContainmentId = ParseContainmentIdFromString(containment);
-                if(parsedContainmentId == null)
+                int parsedContainmentId = ParseContainmentIdFromString(containment);
+                if(parsedContainmentId == Constants.UNASSIGNED)
                 {
                     Console.WriteLine("Unable to obtain integer from containment string '{0}'", containment);
                     Console.ReadLine();
@@ -77,11 +77,14 @@ namespace scanapp {
                         Console.ReadLine();
                         continue;
                     }
-                    bool isNewAssignment = (a.ContainmentId == parsedContainmentId);
+                    bool isNewAssignment = a.ContainmentId == parsedContainmentId;
                     Console.WriteLine("Article '{0}' | Already in containment? {1}", a.ArticleName, isNewAssignment);
                     articlesToUpdate.Add(a);
                 }
                 Console.WriteLine("Updating {0} articles.", articlesToUpdate.Count);
+                Service apiService  = new Service(backendUri);
+                await apiService.SetArticleContainments(parsedContainmentId, articlesToUpdate);
+                Console.WriteLine("Update complete..");
                 Console.ReadLine();
                 break;
             }

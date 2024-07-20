@@ -4,6 +4,7 @@ using scanapp;
 namespace scanapp {
 
     internal partial class Procedures {
+
         
         public static void AddBarcodeToArticle(List<Article> articles, MongoDbHandler mongoHandler)
         {
@@ -11,10 +12,7 @@ namespace scanapp {
             while (true)
             {
                 Console.WriteLine("Barcode to be added to " + modifiedArticles.Count + " articles.");
-                Console.WriteLine("Enter article id:");
-                int? articleId = Utils.ReadInteger();
-                if (articleId == null)
-                    break;
+                int articleId = Utils.ReadInteger("Enter article id:");
                 if (articleId == Constants.UNASSIGNED)
                     continue;
                 var article = articles.Find(a => a.ArticleId == articleId);
@@ -32,21 +30,21 @@ namespace scanapp {
                 }
                 Console.Clear();
             }
-            if (modifiedArticles.Count == 0)
-                return;
-            if (!SelectorMenu<bool>.getYesNoMenu("Do you want to update articles?").runConsoleMenu())
-                return;
-            var success = mongoHandler.setBarcodeOfArticles(modifiedArticles);
-            if (success)
-            {
-                Console.WriteLine("Barcode of articles successfully updated");
-            }
-            else
-            {
-                Console.WriteLine("There was an error updating the barcodes");
-            }
-            Console.WriteLine("Press any key to continue...");
-            Console.Read();
+            // if (modifiedArticles.Count == 0)
+            //     return;
+            // if (!SelectorMenu<bool>.getYesNoMenu("Do you want to update articles?").runConsoleMenu())
+            //     return;
+            // var success = mongoHandler.setBarcodeOfArticles(modifiedArticles);
+            // if (success)
+            // {
+            //     Console.WriteLine("Barcode of articles successfully updated");
+            // }
+            // else
+            // {
+            //     Console.WriteLine("There was an error updating the barcodes");
+            // }
+            // Console.WriteLine("Press any key to continue...");
+            // Console.Read();
         }
 
     };

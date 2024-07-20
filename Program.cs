@@ -69,7 +69,7 @@ while (true) {
             Procedures.InsertNewArticlesWithBarcode(articles, backendUri);
             break;
         case MainMenuAction.ASSIGN_CONTAINMENT_TO_ARTICLE:
-            Procedures.AssignArticlesToContainment(articles, containments);
+            Procedures.AssignArticlesToContainment(articles, containments, backendUri);
             break;
         case MainMenuAction.QUIT:
             return 0;
