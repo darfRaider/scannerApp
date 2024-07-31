@@ -29,4 +29,6 @@ public class Containment
 
     public int? Capacity { get; set; }
 
+    public bool IsDeleted { get; set; }
+
 }

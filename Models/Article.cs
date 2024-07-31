@@ -46,11 +46,7 @@ namespace scanapp.Models
 
         public string? Location { get; set; }
 
-        public bool? InStock { get; set; }
-
         public bool IsFlagged { get; set; } = false;
-
-        public bool IsConsumed { get; set; }
 
         public double? Weight { get; set; }
 
@@ -59,5 +55,14 @@ namespace scanapp.Models
         public string? Barcode { get; set; }
 
         public string? State { get; set; }
+        public DateTime? ConsumptionStartDate { get; set; }
+        public DateTime? ConsumptionEndDate { get; set; }
+
+	public bool IsDeleted { get; set; }
     }
+}
+
+public class RequestArticlesContainmentAssignment {
+    public int ContainmentId {get; set;}
+    public int[] Articles {get; set;} 
 }

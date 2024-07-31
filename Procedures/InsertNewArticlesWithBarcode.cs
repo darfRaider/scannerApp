@@ -1,8 +1,49 @@
 using scanapp.Models;
 using scanapp;
+using System.Diagnostics;
 
 
 namespace scanapp {
+
+
+    public enum InsertionAction {
+        InsertNew,
+        Duplicate
+    }
+    public class InsertArticle {
+        private Article article;
+        private int copies = 1;
+
+        public InsertionAction insertionAction;
+
+        public InsertArticle(Article article, InsertionAction insertionAction, int copies){
+            this.article = article;
+            this.copies = copies;
+            this.insertionAction = insertionAction;
+        }
+
+        public async Task process(Service apiService){
+            switch(this.insertionAction){
+                case InsertionAction.InsertNew:
+                    await this.InsertNew(apiService);
+                    break;
+                case InsertionAction.Duplicate:
+                    await this.Duplicate(apiService);
+                    break;
+            }
+        }
+
+        private async Task Duplicate(Service apiService){
+            for (int input = 0; input < this.copies; input++) {
+                await apiService.DuplicateArticle(this.article.ArticleId, article);
+            }
+        }
+        private async Task InsertNew(Service apiService){
+            for (int input = 0; input < this.copies; input++) {
+                await apiService.InsertArticle(article);
+            }
+        }
+    }
 
     internal partial class Procedures {
 
@@ -14,23 +55,24 @@ namespace scanapp {
         }
 
 
-        public static void InsertNewArticlesWithBarcode(List<Article> articles)
+        public static async void InsertNewArticlesWithBarcode(List<Article> articles, string backendUri)
         {
-            // TODO: move  following to config file!!
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
-            bool addImageUrls = SelectorMenu<bool>.getYesNoMenu("Do you want to add article image urls?", true).runConsoleMenu();
-
-            List<Article> articlesToBeDuplicated = new List<Article>();
-            List<Article> articlesToBeInserted = new List<Article>();
+            List<InsertArticle> articlesToBeProcessed = new List<InsertArticle>();
             while (true)
             {
+                Console.Clear();
+                Console.WriteLine(String.Format("Staged Articles: {0} (new) {1} (duplicated)", articlesToBeProcessed.FindAll(x => x.insertionAction==InsertionAction.InsertNew).Count, articlesToBeProcessed.FindAll(x => x.insertionAction==InsertionAction.Duplicate).Count));
                 Console.Write("Enter the barcode: ");
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
                     break;
-                DateTime? expirationDate = Utils.ReadDate("Enter Expiration Date: ");
-                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode);
+                DateTime? expirationDate = null;
+                if (addExpirationDate)
+                    expirationDate = Utils.ReadDate("Enter Expiration Date: ");
+                int numberOfCopies = Utils.ReadInteger("Number of copies: ", 1);
+                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode).Distinct(new ArticleComparer()).ToList();
                 if (alreadyExistingLst == null || alreadyExistingLst.Count == 0)
                 {
                     Article newArticle = new Article();
@@ -38,7 +80,7 @@ namespace scanapp {
                     newArticle.IsFlagged = setNewArticlesFlagged;
                     newArticle.ExpirationDate = expirationDate;
                     newArticle.ArticleName = Utils.ReadString("Article Name: ");
-                    articlesToBeInserted.Add(newArticle);
+                    articlesToBeProcessed.Add(new InsertArticle(newArticle, InsertionAction.InsertNew, numberOfCopies));
                     // Call insert routine
                     // Add a new article
                     // Enter Image URL
@@ -46,7 +88,13 @@ namespace scanapp {
                 else if (alreadyExistingLst.Count == 1)
                 {
                     Article existing = alreadyExistingLst[0];
+                    existing.Comment = null;
+                    existing.State = null;
+                    existing.PurchaseDate = null;
+                    existing.Location = null;
                     existing.ExpirationDate = expirationDate;
+                    if(setNewArticlesFlagged)
+                        existing.IsFlagged = true;
                     string menuString =
                         string.Format(
                             "Purchase number '{0}' already registered with article #{1} '{2}'",
@@ -70,7 +118,7 @@ namespace scanapp {
                             break;
                         case Constants.AddNewArticleAction.DUPLICATE_ARTICLE:
                             // Call duplication routine
-                            articlesToBeDuplicated.Add(existing);
+                            articlesToBeProcessed.Add(new InsertArticle(existing, InsertionAction.Duplicate, numberOfCopies));
                             break;
                     }
                 }
@@ -87,8 +135,12 @@ namespace scanapp {
                 return;
             
             Service apiService  = new Service(backendUri);
-            articlesToBeInserted.ForEach(article => apiService.InsertArticle(article));
-            articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
+            foreach(var article in articlesToBeProcessed)
+                await article.process(apiService);
+            // foreach(var article in articlesToBeDuplicated)
+            //     await apiService.DuplicateArticle(article.ArticleId, article);
+            // articlesToBeInserted.ForEach(article => );
+            // articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
         }
     };
 }

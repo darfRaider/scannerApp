@@ -23,12 +23,17 @@ namespace scanapp {
             return query;
         }
 
-        public static int? ReadInteger()
+        public static int ReadInteger(string message = "", int? defaultValue = null)
         {
+            if(message != "")
+                Console.WriteLine(message);
             string? lineString = Console.ReadLine();
             if (lineString == "" || lineString == null)
             {
-                return null;
+                if(defaultValue != null){
+                    return (int) defaultValue;
+                }
+                return Constants.UNASSIGNED;
             }
             int query = Constants.UNASSIGNED;
             try
