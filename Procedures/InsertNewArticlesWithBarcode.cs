@@ -14,9 +14,8 @@ namespace scanapp {
         }
 
 
-        public static void InsertNewArticlesWithBarcode(List<Article> articles)
+        public static async void InsertNewArticlesWithBarcode(List<Article> articles, string backendUri)
         {
-            // TODO: move  following to config file!!
             bool addExpirationDate = SelectorMenu<bool>.getYesNoMenu("Do you want to set expiration date?", true).runConsoleMenu();
             bool setNewArticlesFlagged = SelectorMenu<bool>.getYesNoMenu("Do you want new artices to be flagged?", true).runConsoleMenu();
             bool addImageUrls = SelectorMenu<bool>.getYesNoMenu("Do you want to add article image urls?", true).runConsoleMenu();
@@ -25,12 +24,16 @@ namespace scanapp {
             List<Article> articlesToBeInserted = new List<Article>();
             while (true)
             {
+                Console.Clear();
+                Console.WriteLine(String.Format("Staged Articles: {0} (new) {1} (duplicated)", articlesToBeInserted.Count, articlesToBeDuplicated.Count));
                 Console.Write("Enter the barcode: ");
                 string? barcode = Console.ReadLine();
                 if (barcode == null || barcode == "")
                     break;
-                DateTime? expirationDate = Utils.ReadDate("Enter Expiration Date: ");
-                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode);
+                DateTime? expirationDate = null;
+                if (addExpirationDate)
+                    expirationDate = Utils.ReadDate("Enter Expiration Date: ");
+                var alreadyExistingLst = articles.FindAll(article => article.Barcode == barcode).Distinct(new ArticleComparer()).ToList();
                 if (alreadyExistingLst == null || alreadyExistingLst.Count == 0)
                 {
                     Article newArticle = new Article();
@@ -46,6 +49,8 @@ namespace scanapp {
                 else if (alreadyExistingLst.Count == 1)
                 {
                     Article existing = alreadyExistingLst[0];
+                    existing.Comment = null;
+                    existing.PurchaseDate = null;
                     existing.ExpirationDate = expirationDate;
                     string menuString =
                         string.Format(
@@ -87,8 +92,13 @@ namespace scanapp {
                 return;
             
             Service apiService  = new Service(backendUri);
-            articlesToBeInserted.ForEach(article => apiService.InsertArticle(article));
-            articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
+            foreach(var article in articlesToBeInserted)
+                await apiService.InsertArticle(article);
+            foreach(var article in articlesToBeDuplicated)
+                await apiService.DuplicateArticle(article.ArticleId, article);
+            // articlesToBeInserted.ForEach(article => );
+            // articlesToBeDuplicated.ForEach(article => apiService.DuplicateArticle(article.ArticleId, article));
         }
     };
 }
+

@@ -1,27 +1,37 @@
 ﻿using scanapp;
 using scanapp.Models;
 
-var mongoHostList = new List<ConsoleMenuItem<String>>
+
+
+ List<ConsoleMenuItem<DevEnvironment>> environmentList = new List<ConsoleMenuItem<DevEnvironment>>
 {
-    new ConsoleMenuItem<String>("localhost", "mongodb://localhost:27017"),
-    new ConsoleMenuItem<String>("Raspberrypi 5", "mongodb://192.168.0.13:27017"),
-    new ConsoleMenuItem<String>("Production NAS", "mongodb://192.168.0.5:27017")
+    new ConsoleMenuItem<DevEnvironment>("localhost", DevEnvironment.LOCALHOST),
+    new ConsoleMenuItem<DevEnvironment>("Raspberrypi 5", DevEnvironment.RASPBERRY_PI_5),
+    new ConsoleMenuItem<DevEnvironment>("Production NAS", DevEnvironment.PRODUCTION_NAS)
 };
 
-const String backendUri = "http://192.168.0.13:5269/";
+Dictionary<DevEnvironment, String> mongoHosts = new Dictionary<DevEnvironment, String>();
 
-string? host = new SelectorMenu<String>(mongoHostList, 1, "Select Development Environment").runConsoleMenu();
+mongoHosts.Add(DevEnvironment.LOCALHOST, "mongodb://localhost:27017");
+mongoHosts.Add(DevEnvironment.RASPBERRY_PI_5, "mongodb://192.168.0.13:27017");
+mongoHosts.Add(DevEnvironment.PRODUCTION_NAS, "mongodb://192.168.0.5:27017");
+
+Dictionary<DevEnvironment, String> backendApiHosts = new Dictionary<DevEnvironment, String>();
+backendApiHosts.Add(DevEnvironment.LOCALHOST, "http://localhost:5269/");
+backendApiHosts.Add(DevEnvironment.RASPBERRY_PI_5, "http://192.168.0.13:5269/");
+backendApiHosts.Add(DevEnvironment.PRODUCTION_NAS, "http://192.168.0.5:5269/");
+
+
+
+DevEnvironment env = new SelectorMenu<DevEnvironment>(environmentList, 1, "Select Development Ennvironment").runConsoleMenu();
+string host = mongoHosts[env];
+string backendUri = backendApiHosts[env];
+
 
 if(host == null)
 {
     return 0;
 }
-
-// Article a = new Article();
-// a.ArticleName = "Testli";
-// s.DuplicateArticle(1762, a);
-// Console.ReadLine();
-
 
 Console.WriteLine("Loading database records");
 MongoDbHandler mongo = new MongoDbHandler(host, Constants.DatabaseName);
@@ -56,7 +66,7 @@ while (true) {
             Procedures.AddBarcodeToArticle(articles, mongo);
             break;
         case MainMenuAction.ADD_NEW_ARTICLE_WITH_BARCODE:
-            Procedures.InsertNewArticlesWithBarcode(articles);
+            Procedures.InsertNewArticlesWithBarcode(articles, backendUri);
             break;
         case MainMenuAction.ASSIGN_CONTAINMENT_TO_ARTICLE:
             Procedures.AssignArticlesToContainment(articles, containments);
@@ -64,29 +74,12 @@ while (true) {
         case MainMenuAction.QUIT:
             return 0;
     }
-    /*
-    string? data = Console.ReadLine();
-    if(data == null){
-        Console.WriteLine("String should not be null!");
-        continue;
-    }
-    int query = Constants.UNASSIGNED;
-    try {
-        query = Int32.Parse(data);
-    }
-    catch {
-        Console.WriteLine("Unable to parse data.");
-        continue;
-    }
-    var searchResult = articles.Find(ret => ret.ArticleId == query);
-    if(searchResult == null){
-        Console.WriteLine("Article id not found");
-        continue;
-    }
-    Console.WriteLine("Article Name: " + searchResult.ArticleName);
-    Console.WriteLine(DateTime.Now.ToString());
-    Console.WriteLine("Expiration date: " + searchResult.ExpirationDate.ToString());
-    */
+}
+
+enum DevEnvironment {
+    LOCALHOST,
+    RASPBERRY_PI_5,
+    PRODUCTION_NAS
 }
 
 enum MainMenuAction
