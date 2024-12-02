@@ -90,6 +90,7 @@ namespace scanapp {
                     Article existing = alreadyExistingLst[0];
                     existing.Comment = null;
                     existing.State = null;
+		    existing.Quantity = null;
                     existing.PurchaseDate = null;
                     existing.Location = null;
                     existing.ExpirationDate = expirationDate;
